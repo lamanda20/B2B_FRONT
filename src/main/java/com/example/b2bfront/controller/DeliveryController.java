@@ -5,6 +5,7 @@ import com.example.b2bfront.model.DeliveryStatus;
 import com.example.b2bfront.model.ShippingAddress;
 import com.example.b2bfront.service.ApiService;
 import com.example.b2bfront.service.DeliveryService;
+import com.example.b2bfront.service.NotificationService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -106,6 +107,7 @@ public class DeliveryController {
     private Label statusLabel;
 
     private DeliveryService deliveryService;
+    private NotificationService notificationService;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final ObservableList<Delivery> deliveryList = FXCollections.observableArrayList();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -114,6 +116,12 @@ public class DeliveryController {
     private void initialize() {
         ApiService apiService = new ApiService();
         deliveryService = new DeliveryService(apiService);
+        notificationService = NotificationService.getInstance();
+
+        // Enregistrer un listener pour afficher les notifications dans la console
+        notificationService.addListener((message, type) -> {
+            System.out.println("🔔 NOTIFICATION [" + type + "]: " + message);
+        });
 
         setupTableColumns();
         setupCarrierComboBox();
@@ -325,6 +333,14 @@ public class DeliveryController {
                         clearForm();
                         statusLabel.setText("✓ Livraison créée avec succès");
                         statusLabel.setStyle("-fx-text-fill: green;");
+
+                        // 🔔 NOTIFICATION: Nouvelle livraison créée
+                        notificationService.notifyNewDelivery(
+                            created.getId(),
+                            created.getTrackingNumber(),
+                            created.getShippingAddress().getCity()
+                        );
+
                         showInfo("Succès", "Livraison créée avec le numéro: " +
                                 created.getTrackingNumber());
                     });
@@ -332,6 +348,7 @@ public class DeliveryController {
                     Platform.runLater(() -> {
                         statusLabel.setText("✗ Erreur de création");
                         statusLabel.setStyle("-fx-text-fill: red;");
+                        notificationService.notifyError("Échec de création de la livraison: " + e.getMessage());
                         showError("Erreur", e.getMessage());
                     });
                     e.printStackTrace();
@@ -358,6 +375,8 @@ public class DeliveryController {
         dialog.setContentText("Nouveau statut:");
 
         dialog.showAndWait().ifPresent(newStatus -> {
+            DeliveryStatus oldStatus = selected.getStatus();
+
             executorService.submit(() -> {
                 try {
                     Delivery updated = deliveryService.updateDeliveryStatus(
@@ -368,9 +387,36 @@ public class DeliveryController {
                         displayDeliveryDetails(updated);
                         statusLabel.setText("✓ Statut mis à jour");
                         statusLabel.setStyle("-fx-text-fill: green;");
+
+                        // 🔔 NOTIFICATION: Changement de statut
+                        notificationService.notifyStatusChange(
+                            updated.getId(),
+                            oldStatus.getDisplayName(),
+                            newStatus.getDisplayName(),
+                            updated.getTrackingNumber()
+                        );
+
+                        // 🔔 NOTIFICATION SPÉCIALE: Si livré
+                        if (newStatus == DeliveryStatus.DELIVERED) {
+                            notificationService.notifyDelivered(
+                                updated.getId(),
+                                updated.getTrackingNumber(),
+                                updated.getShippingAddress().getRecipientName()
+                            );
+                        }
+
+                        // 🔔 NOTIFICATION SPÉCIALE: Si retourné
+                        if (newStatus == DeliveryStatus.RETURNED) {
+                            notificationService.notifyReturned(
+                                updated.getId(),
+                                updated.getTrackingNumber(),
+                                updated.getNotes()
+                            );
+                        }
                     });
                 } catch (Exception e) {
                     Platform.runLater(() -> {
+                        notificationService.notifyError("Échec de mise à jour du statut: " + e.getMessage());
                         showError("Erreur", e.getMessage());
                     });
                     e.printStackTrace();

@@ -27,7 +27,7 @@
 
     <!-- Main Content -->
     <center>
-        <SplitPane dividerPositions="0.6">
+        <SplitPane dividerPositions="0.5">
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
@@ -72,129 +72,132 @@
                 </HBox>
             </VBox>
 
-            <!-- Right Side: Details and Forms -->
-            <VBox spacing="15">
-                <!-- Delivery Details -->
-                <VBox fx:id="detailsPane" spacing="10" style="-fx-border-color: #3498db; -fx-border-width: 2; -fx-border-radius: 5; -fx-padding: 15; -fx-background-color: #ecf0f1; -fx-background-radius: 5;">
-                    <Label text="📋 Détails de la Livraison" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+            <!-- Right Side: Details and Forms with ScrollPane -->
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+                <VBox spacing="15" style="-fx-padding: 5;">
 
-                    <GridPane hgap="10" vgap="8">
-                        <columnConstraints>
-                            <ColumnConstraints percentWidth="40"/>
-                            <ColumnConstraints percentWidth="60"/>
-                        </columnConstraints>
+                    <!-- Create Delivery Form - EN HAUT POUR ÊTRE VISIBLE -->
+                    <VBox spacing="10" style="-fx-border-color: #27ae60; -fx-border-width: 2; -fx-border-radius: 5; -fx-padding: 15; -fx-background-color: #e8f8f5; -fx-background-radius: 5;">
+                        <Label text="➕ Créer une Nouvelle Livraison" style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
 
-                        <Label text="ID Livraison:" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblDeliveryId" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                        <GridPane hgap="10" vgap="10">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="35"/>
+                                <ColumnConstraints percentWidth="65"/>
+                            </columnConstraints>
 
-                        <Label text="N° Commande:" GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblOrderId" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            <Label text="N° Commande:*" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <TextField fx:id="txtOrderIdInput" promptText="123" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
-                        <Label text="Transporteur:" GridPane.columnIndex="0" GridPane.rowIndex="2" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblCarrier" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            <Label text="Destinataire:*" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <TextField fx:id="txtRecipientName" promptText="Nom complet" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
-                        <Label text="N° Suivi:" GridPane.columnIndex="0" GridPane.rowIndex="3" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblTrackingNumber" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                            <Label text="Adresse:*" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                            <TextField fx:id="txtFullAddress" promptText="Rue, numéro..." GridPane.columnIndex="1" GridPane.rowIndex="2"/>
 
-                        <Label text="Frais de livraison:" GridPane.columnIndex="0" GridPane.rowIndex="4" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblShippingCost" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                            <Label text="Ville:*" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                            <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                <TextField fx:id="txtCity" promptText="Casablanca" HBox.hgrow="ALWAYS"/>
+                                <Button text="💰 Calculer frais" onAction="#onCalculateShippingCost"
+                                        style="-fx-background-color: #16a085; -fx-text-fill: white; -fx-font-size: 11;"/>
+                            </HBox>
 
-                        <Label text="Livraison estimée:" GridPane.columnIndex="0" GridPane.rowIndex="5" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblEstimatedDelivery" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                            <Label text="Code Postal:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                            <TextField fx:id="txtPostalCode" promptText="20000" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
 
-                        <Label text="Livraison réelle:" GridPane.columnIndex="0" GridPane.rowIndex="6" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblActualDelivery" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-                    </GridPane>
+                            <Label text="Téléphone:*" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                            <TextField fx:id="txtPhoneNumber" promptText="0612345678" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
 
-                    <Separator/>
+                            <Label text="Transporteur:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                            <ComboBox fx:id="cmbCarrier" prefWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
 
-                    <!-- Status Progress -->
-                    <VBox spacing="5">
-                        <Label text="Statut:" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblStatus" style="-fx-font-size: 14;"/>
-                        <ProgressBar fx:id="statusProgressBar" prefWidth="Infinity" prefHeight="25"/>
-                        <Label fx:id="lblProgressStatus" style="-fx-font-style: italic;"/>
-                    </VBox>
+                            <Label text="Frais calculés:" GridPane.columnIndex="0" GridPane.rowIndex="7" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblCalculatedCost" GridPane.columnIndex="1" GridPane.rowIndex="7" style="-fx-font-size: 14; -fx-text-fill: #16a085;"/>
+                        </GridPane>
 
-                    <Separator/>
-
-                    <!-- Shipping Address -->
-                    <Label text="📍 Adresse de Livraison" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
-                    <GridPane hgap="10" vgap="5">
-                        <columnConstraints>
-                            <ColumnConstraints percentWidth="40"/>
-                            <ColumnConstraints percentWidth="60"/>
-                        </columnConstraints>
-
-                        <Label text="Destinataire:" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblRecipientName" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-
-                        <Label text="Adresse:" GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblAddress" GridPane.columnIndex="1" GridPane.rowIndex="1" wrapText="true"/>
-
-                        <Label text="Ville:" GridPane.columnIndex="0" GridPane.rowIndex="2" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblCity" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-
-                        <Label text="Code Postal:" GridPane.columnIndex="0" GridPane.rowIndex="3" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblPostalCode" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-
-                        <Label text="Téléphone:" GridPane.columnIndex="0" GridPane.rowIndex="4" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblPhoneNumber" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-                    </GridPane>
-
-                    <Separator/>
-
-                    <Label text="Notes:" style="-fx-font-weight: bold;"/>
-                    <TextArea fx:id="txtNotes" editable="false" wrapText="true" prefRowCount="3"/>
-                </VBox>
-
-                <!-- Create Delivery Form -->
-                <VBox spacing="10" style="-fx-border-color: #27ae60; -fx-border-width: 2; -fx-border-radius: 5; -fx-padding: 15; -fx-background-color: #e8f8f5; -fx-background-radius: 5;">
-                    <Label text="➕ Créer une Nouvelle Livraison" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
-
-                    <GridPane hgap="10" vgap="10">
-                        <columnConstraints>
-                            <ColumnConstraints percentWidth="35"/>
-                            <ColumnConstraints percentWidth="65"/>
-                        </columnConstraints>
-
-                        <Label text="N° Commande:*" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                        <TextField fx:id="txtOrderIdInput" promptText="123" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-
-                        <Label text="Destinataire:*" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                        <TextField fx:id="txtRecipientName" promptText="Nom complet" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-
-                        <Label text="Adresse:*" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                        <TextField fx:id="txtFullAddress" promptText="Rue, numéro..." GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-
-                        <Label text="Ville:*" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                        <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                            <TextField fx:id="txtCity" promptText="Casablanca" HBox.hgrow="ALWAYS"/>
-                            <Button text="💰 Calculer frais" onAction="#onCalculateShippingCost"
-                                    style="-fx-background-color: #16a085; -fx-text-fill: white; -fx-font-size: 11;"/>
+                        <HBox spacing="10" alignment="CENTER">
+                            <Button text="✅ Créer la Livraison" onAction="#onCreateDelivery"
+                                    style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold; -fx-padding: 10 20;"/>
                         </HBox>
 
-                        <Label text="Code Postal:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                        <TextField fx:id="txtPostalCode" promptText="20000" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                        <Label text="* Champs obligatoires" style="-fx-font-size: 10; -fx-text-fill: #7f8c8d; -fx-font-style: italic;"/>
+                    </VBox>
 
-                        <Label text="Téléphone:*" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-                        <TextField fx:id="txtPhoneNumber" promptText="0612345678" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                    <!-- Delivery Details - EN DESSOUS -->
+                    <VBox fx:id="detailsPane" spacing="10" style="-fx-border-color: #3498db; -fx-border-width: 2; -fx-border-radius: 5; -fx-padding: 15; -fx-background-color: #ecf0f1; -fx-background-radius: 5;">
+                        <Label text="📋 Détails de la Livraison" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
 
-                        <Label text="Transporteur:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-                        <ComboBox fx:id="cmbCarrier" prefWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                        <GridPane hgap="10" vgap="8">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="40"/>
+                                <ColumnConstraints percentWidth="60"/>
+                            </columnConstraints>
 
-                        <Label text="Frais calculés:" GridPane.columnIndex="0" GridPane.rowIndex="7" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblCalculatedCost" GridPane.columnIndex="1" GridPane.rowIndex="7" style="-fx-font-size: 14;"/>
-                    </GridPane>
+                            <Label text="ID Livraison:" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblDeliveryId" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
-                    <HBox spacing="10" alignment="CENTER">
-                        <Button text="✅ Créer la Livraison" onAction="#onCreateDelivery"
-                                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold; -fx-padding: 10 20;"/>
-                    </HBox>
+                            <Label text="N° Commande:" GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblOrderId" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
-                    <Label text="* Champs obligatoires" style="-fx-font-size: 10; -fx-text-fill: #7f8c8d; -fx-font-style: italic;"/>
+                            <Label text="Transporteur:" GridPane.columnIndex="0" GridPane.rowIndex="2" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblCarrier" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                            <Label text="N° Suivi:" GridPane.columnIndex="0" GridPane.rowIndex="3" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblTrackingNumber" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                            <Label text="Frais de livraison:" GridPane.columnIndex="0" GridPane.rowIndex="4" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblShippingCost" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+                            <Label text="Livraison estimée:" GridPane.columnIndex="0" GridPane.rowIndex="5" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblEstimatedDelivery" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+
+                            <Label text="Livraison réelle:" GridPane.columnIndex="0" GridPane.rowIndex="6" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblActualDelivery" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                        </GridPane>
+
+                        <Separator/>
+
+                        <!-- Status Progress -->
+                        <VBox spacing="5">
+                            <Label text="Statut:" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblStatus" style="-fx-font-size: 14;"/>
+                            <ProgressBar fx:id="statusProgressBar" prefWidth="Infinity" prefHeight="25"/>
+                            <Label fx:id="lblProgressStatus" style="-fx-font-style: italic;"/>
+                        </VBox>
+
+                        <Separator/>
+
+                        <!-- Shipping Address -->
+                        <Label text="📍 Adresse de Livraison" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+                        <GridPane hgap="10" vgap="5">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="40"/>
+                                <ColumnConstraints percentWidth="60"/>
+                            </columnConstraints>
+
+                            <Label text="Destinataire:" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblRecipientName" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                            <Label text="Adresse:" GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblAddress" GridPane.columnIndex="1" GridPane.rowIndex="1" wrapText="true"/>
+
+                            <Label text="Ville:" GridPane.columnIndex="0" GridPane.rowIndex="2" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblCity" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                            <Label text="Code Postal:" GridPane.columnIndex="0" GridPane.rowIndex="3" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblPostalCode" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                            <Label text="Téléphone:" GridPane.columnIndex="0" GridPane.rowIndex="4" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblPhoneNumber" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                        </GridPane>
+
+                        <Separator/>
+
+                        <Label text="Notes:" style="-fx-font-weight: bold;"/>
+                        <TextArea fx:id="txtNotes" editable="false" wrapText="true" prefRowCount="3"/>
+                    </VBox>
                 </VBox>
-            </VBox>
+            </ScrollPane>
         </SplitPane>
     </center>
 

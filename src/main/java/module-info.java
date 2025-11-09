@@ -6,8 +6,8 @@ module com.example.b2bfront {
 
     opens com.example.b2bfront to javafx.fxml;
     opens com.example.b2bfront.controller to javafx.fxml;
+    opens com.example.b2bfront.model to com.google.gson;
 
     exports com.example.b2bfront;
     exports com.example.b2bfront.controller;
 }
-

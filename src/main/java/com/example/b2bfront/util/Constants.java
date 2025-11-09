@@ -15,6 +15,16 @@ public class Constants {
     public static final String ENDPOINT_REGISTER = "/auth/register";
     public static final String ENDPOINT_USERS = "/users";
 
+    // Delivery Endpoints
+    public static final String ENDPOINT_DELIVERIES = "/deliveries";
+    public static final String ENDPOINT_SHIPPING_ADDRESS = "/shipping-addresses";
+
+    // Order Endpoints (pour intégration avec module commandes)
+    public static final String ENDPOINT_ORDERS = "/orders";
+
+    // Payment Endpoints (pour intégration avec module paiement)
+    public static final String ENDPOINT_PAYMENTS = "/payments";
+
     // Application Configuration
     public static final String APP_TITLE = "B2B Front Application";
     public static final int APP_WIDTH = 800;

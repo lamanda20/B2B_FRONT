@@ -137,10 +137,9 @@ public class MainController {
 
     @FXML
     private void onShowPayments() {
-        System.out.println("Navigation: Paiements");
-        // TODO: À implémenter par la personne responsable du module Paiements
-        // Exemple: loadModule("/com/example/b2bfront/payments.fxml", "Paiements");
-        showModuleNotAvailable("Paiements");
+        System.out.println("Navigation: Paiements (Module Actif ✅)");
+        // ✅ MODULE PAIEMENTS - IMPLÉMENTÉ
+        loadModule("/com/example/b2bfront/payments.fxml", "Paiements");
     }
 
     @FXML

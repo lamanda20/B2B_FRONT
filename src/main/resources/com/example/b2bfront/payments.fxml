@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.b2bfront.controller.PaymentController"
+            prefHeight="700.0" prefWidth="1200.0">
+
+    <!-- Header -->
+    <top>
+        <VBox style="-fx-background-color: #2c3e50; -fx-padding: 15;">
+            <Label text="💳 Module Paiements &amp; Transactions" textFill="white">
+                <font>
+                    <Font name="System Bold" size="24.0"/>
+                </font>
+            </Label>
+            <Label fx:id="statusLabel" text="Prêt" textFill="#ecf0f1" style="-fx-padding: 5 0 0 0;">
+                <font>
+                    <Font size="12.0"/>
+                </font>
+            </Label>
+        </VBox>
+    </top>
+
+    <!-- Main Content -->
+    <center>
+        <SplitPane dividerPositions="0.5">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+
+            <!-- Left Side: List and Filters -->
+            <VBox spacing="10">
+                <!-- Filters and Actions Bar -->
+                <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10; -fx-background-color: #ecf0f1; -fx-background-radius: 5;">
+                    <Button text="🔄 Charger tout" onAction="#onLoadAllPayments" style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+
+                    <Separator orientation="VERTICAL"/>
+
+                    <Label text="Filtrer par statut:"/>
+                    <ComboBox fx:id="cmbStatusFilter" prefWidth="150" onAction="#onFilterByStatus"/>
+
+                    <Separator orientation="VERTICAL"/>
+
+                    <Label text="🔍 Transaction:"/>
+                    <TextField fx:id="txtTransactionSearch" promptText="ID Transaction" prefWidth="150"/>
+                    <Button text="Rechercher" onAction="#onSearchTransaction" style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+                </HBox>
+
+                <!-- Payments Table -->
+                <TableView fx:id="paymentTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                        <TableColumn fx:id="colOrderId" text="N° Commande" prefWidth="100"/>
+                        <TableColumn fx:id="colAmount" text="Montant (MAD)" prefWidth="120"/>
+                        <TableColumn fx:id="colMethod" text="Méthode" prefWidth="120"/>
+                        <TableColumn fx:id="colStatus" text="Statut" prefWidth="120"/>
+                        <TableColumn fx:id="colDate" text="Date" prefWidth="150"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                </TableView>
+
+                <!-- Action Buttons -->
+                <HBox spacing="10" alignment="CENTER">
+                    <Button text="✅ Valider le paiement" onAction="#onValidatePayment"
+                            style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14;"/>
+                    <Button text="❌ Annuler le paiement" onAction="#onCancelPayment"
+                            style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14;"/>
+                </HBox>
+            </VBox>
+
+            <!-- Right Side: Details and Forms with ScrollPane -->
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+                <VBox spacing="15" style="-fx-padding: 5;">
+
+                    <!-- Create Payment Form - EN HAUT POUR ÊTRE VISIBLE -->
+                    <VBox spacing="10" style="-fx-border-color: #27ae60; -fx-border-width: 2; -fx-border-radius: 5; -fx-padding: 15; -fx-background-color: #e8f8f5; -fx-background-radius: 5;">
+                        <Label text="➕ Enregistrer un Nouveau Paiement" style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+
+                        <GridPane hgap="10" vgap="10">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="35"/>
+                                <ColumnConstraints percentWidth="65"/>
+                            </columnConstraints>
+
+                            <Label text="N° Commande:*" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <TextField fx:id="txtOrderIdInput" promptText="123" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                            <Label text="Montant (MAD):*" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <TextField fx:id="txtAmount" promptText="1500.00" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                            <Label text="Méthode de paiement:*" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                            <ComboBox fx:id="cmbPaymentMethod" prefWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                            <Label text="Référence:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                            <TextField fx:id="txtReference" promptText="Référence bancaire..." GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                            <Label text="Notes:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                            <TextArea fx:id="txtPaymentNotes" promptText="Informations supplémentaires..."
+                                      prefRowCount="3" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                        </GridPane>
+
+                        <HBox spacing="10" alignment="CENTER">
+                            <Button text="✅ Enregistrer le Paiement" onAction="#onCreatePayment"
+                                    style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold; -fx-padding: 10 20;"/>
+                            <Button text="🧹 Réinitialiser" onAction="#onResetForm"
+                                    style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-size: 14; -fx-padding: 10 20;"/>
+                        </HBox>
+
+                        <Label text="* Champs obligatoires" style="-fx-font-size: 10; -fx-text-fill: #7f8c8d; -fx-font-style: italic;"/>
+                    </VBox>
+
+                    <!-- Payment Details - EN DESSOUS -->
+                    <VBox fx:id="detailsPane" spacing="10" style="-fx-border-color: #3498db; -fx-border-width: 2; -fx-border-radius: 5; -fx-padding: 15; -fx-background-color: #ecf0f1; -fx-background-radius: 5;">
+                        <Label text="📋 Détails du Paiement" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+
+                        <GridPane hgap="10" vgap="8">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="40"/>
+                                <ColumnConstraints percentWidth="60"/>
+                            </columnConstraints>
+
+                            <Label text="ID Paiement:" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblPaymentId" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                            <Label text="ID Transaction:" GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblTransactionId" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                            <Label text="N° Commande:" GridPane.columnIndex="0" GridPane.rowIndex="2" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblOrderId" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                            <Label text="Montant:" GridPane.columnIndex="0" GridPane.rowIndex="3" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblAmount" GridPane.columnIndex="1" GridPane.rowIndex="3"
+                                   style="-fx-font-size: 18; -fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
+
+                            <Label text="Méthode:" GridPane.columnIndex="0" GridPane.rowIndex="4" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblPaymentMethod" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+                            <Label text="Date de paiement:" GridPane.columnIndex="0" GridPane.rowIndex="5" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblPaymentDate" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+
+                            <Label text="Date de validation:" GridPane.columnIndex="0" GridPane.rowIndex="6" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblValidationDate" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                        </GridPane>
+
+                        <Separator/>
+
+                        <!-- Status Display -->
+                        <VBox spacing="5">
+                            <Label text="Statut:" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblStatus" style="-fx-font-size: 14; -fx-padding: 5; -fx-background-radius: 5;"/>
+                        </VBox>
+
+                        <Separator/>
+
+                        <!-- Transaction Details -->
+                        <Label text="💰 Informations Bancaires" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+                        <GridPane hgap="10" vgap="5">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="40"/>
+                                <ColumnConstraints percentWidth="60"/>
+                            </columnConstraints>
+
+                            <Label text="Référence:" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblReference" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                            <Label text="Compte émetteur:" GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblSenderAccount" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                            <Label text="Compte destinataire:" GridPane.columnIndex="0" GridPane.rowIndex="2" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblReceiverAccount" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                            <Label text="Code autorisation:" GridPane.columnIndex="0" GridPane.rowIndex="3" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="lblAuthCode" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                        </GridPane>
+
+                        <Separator/>
+
+                        <Label text="Notes:" style="-fx-font-weight: bold;"/>
+                        <TextArea fx:id="txtNotes" editable="false" wrapText="true" prefRowCount="3"/>
+
+                        <Separator/>
+
+                        <!-- Payment History -->
+                        <VBox spacing="5">
+                            <Label text="📜 Historique" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+                            <TextArea fx:id="txtHistory" editable="false" wrapText="true" prefRowCount="4"
+                                      style="-fx-font-family: monospace; -fx-font-size: 11;"/>
+                        </VBox>
+                    </VBox>
+                </VBox>
+            </ScrollPane>
+        </SplitPane>
+    </center>
+
+    <!-- Footer -->
+    <bottom>
+        <HBox style="-fx-background-color: #34495e; -fx-padding: 10;" spacing="20" alignment="CENTER_LEFT">
+            <Label text="💡 Astuce: Double-cliquez sur un paiement pour voir les détails"
+                   textFill="white" style="-fx-font-size: 11;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="Module Paiements v1.0 | Connecté au Backend" textFill="#95a5a6" style="-fx-font-size: 10;"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

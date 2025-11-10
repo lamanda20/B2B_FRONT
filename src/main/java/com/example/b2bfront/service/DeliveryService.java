@@ -3,6 +3,7 @@ package com.example.b2bfront.service;
 import com.example.b2bfront.model.Delivery;
 import com.example.b2bfront.model.DeliveryStatus;
 import com.example.b2bfront.model.ShippingAddress;
+import com.example.b2bfront.model.ShippingCostResponse;
 import com.example.b2bfront.util.Constants;
 import com.example.b2bfront.util.LocalDateTimeAdapter;
 import com.google.gson.Gson;
@@ -60,7 +61,7 @@ public class DeliveryService {
      * Récupère les livraisons par statut
      */
     public List<Delivery> getDeliveriesByStatus(DeliveryStatus status) throws IOException {
-        String endpoint = Constants.ENDPOINT_DELIVERIES + "/status/" + status.name();
+        String endpoint = Constants.ENDPOINT_DELIVERIES + "/status/" + status.toBackendValue();
         String response = apiService.get(endpoint);
         Type listType = new TypeToken<List<Delivery>>(){}.getType();
         return gson.fromJson(response, listType);
@@ -97,8 +98,8 @@ public class DeliveryService {
     public Double calculateShippingCost(String city) throws IOException {
         String endpoint = Constants.ENDPOINT_DELIVERIES + "/calculate-shipping?city=" + city;
         String response = apiService.get(endpoint);
-        Map<String, Double> result = gson.fromJson(response, new TypeToken<Map<String, Double>>(){}.getType());
-        return result.get("shippingCost");
+        ShippingCostResponse result = gson.fromJson(response, ShippingCostResponse.class);
+        return result.getShippingCost();
     }
 
     /**
@@ -122,6 +123,15 @@ public class DeliveryService {
     public List<ShippingAddress> getUserShippingAddresses() throws IOException {
         String response = apiService.get(Constants.ENDPOINT_SHIPPING_ADDRESS);
         Type listType = new TypeToken<List<ShippingAddress>>(){}.getType();
+        return gson.fromJson(response, listType);
+    }
+
+    /**
+     * Récupère toutes les commandes disponibles
+     */
+    public List<Map<String, Object>> getAvailableOrders() throws IOException {
+        String response = apiService.get("/commandes");
+        Type listType = new TypeToken<List<Map<String, Object>>>(){}.getType();
         return gson.fromJson(response, listType);
     }
 }

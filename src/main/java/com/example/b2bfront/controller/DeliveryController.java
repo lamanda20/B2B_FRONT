@@ -16,6 +16,7 @@ import javafx.scene.layout.VBox;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -79,7 +80,7 @@ public class DeliveryController {
 
     // Formulaire pour créer/modifier une livraison
     @FXML
-    private TextField txtOrderIdInput;
+    private ComboBox<String> cmbOrderId; // Changé de TextField à ComboBox
     @FXML
     private TextField txtRecipientName;
     @FXML
@@ -110,6 +111,7 @@ public class DeliveryController {
     private NotificationService notificationService;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final ObservableList<Delivery> deliveryList = FXCollections.observableArrayList();
+    private final ObservableList<String> availableOrders = FXCollections.observableArrayList();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     @FXML
@@ -127,6 +129,10 @@ public class DeliveryController {
         setupCarrierComboBox();
         setupStatusFilterComboBox();
         setupTableSelectionListener();
+        setupOrderIdComboBox();
+
+        // ✅ Charger les commandes disponibles
+        loadAvailableOrders();
 
         statusLabel.setText("Module Livraison & Suivi - Prêt");
         detailsPane.setVisible(false);
@@ -171,6 +177,14 @@ public class DeliveryController {
         }
     }
 
+    private void setupOrderIdComboBox() {
+        if (cmbOrderId != null) {
+            cmbOrderId.setItems(availableOrders);
+            cmbOrderId.setPromptText("Sélectionner une commande");
+            cmbOrderId.setEditable(true); // Permettre la saisie manuelle
+        }
+    }
+
     private void setupTableSelectionListener() {
         deliveryTable.getSelectionModel().selectedItemProperty().addListener(
             (observable, oldValue, newValue) -> {
@@ -179,6 +193,53 @@ public class DeliveryController {
                 }
             }
         );
+    }
+
+    /**
+     * Charge les commandes disponibles depuis le backend
+     */
+    private void loadAvailableOrders() {
+        executorService.submit(() -> {
+            try {
+                List<Map<String, Object>> orders = deliveryService.getAvailableOrders();
+                Platform.runLater(() -> {
+                    availableOrders.clear();
+                    for (Map<String, Object> order : orders) {
+                        // Extraire l'ID en tant qu'entier (sans décimales)
+                        Object idObj = order.get("id");
+                        String id;
+                        if (idObj instanceof Number) {
+                            // Convertir en long pour éviter les décimales (1.0 -> 1)
+                            id = String.valueOf(((Number) idObj).longValue());
+                        } else {
+                            id = idObj.toString();
+                        }
+
+                        String refCommande = order.get("refCommande") != null ?
+                            order.get("refCommande").toString() : "N/A";
+                        String statut = order.get("statut") != null ?
+                            order.get("statut").toString() : "";
+
+                        // Afficher: "1 - CMD-001 (EN_ATTENTE)"
+                        String displayText = id + " - " + refCommande + " (" + statut + ")";
+                        availableOrders.add(displayText); // ← CORRECTION: ajouter displayText au lieu de id
+                    }
+                    System.out.println("✓ " + orders.size() + " commande(s) chargée(s)");
+
+                    if (orders.isEmpty()) {
+                        statusLabel.setText("⚠ Aucune commande disponible. Créez d'abord une commande.");
+                        statusLabel.setStyle("-fx-text-fill: orange;");
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    System.err.println("Erreur de chargement des commandes: " + e.getMessage());
+                    statusLabel.setText("⚠ Impossible de charger les commandes");
+                    statusLabel.setStyle("-fx-text-fill: orange;");
+                });
+                e.printStackTrace();
+            }
+        });
     }
 
     @FXML
@@ -302,9 +363,25 @@ public class DeliveryController {
     private void onCreateDelivery() {
         try {
             // Validation
-            if (txtOrderIdInput.getText().trim().isEmpty()) {
+            if (cmbOrderId.getValue() == null || cmbOrderId.getValue().trim().isEmpty()) {
                 showWarning("Validation", "Le numéro de commande est requis");
                 return;
+            }
+
+            if (txtCity.getText().trim().isEmpty()) {
+                showWarning("Validation", "La ville est requise");
+                return;
+            }
+
+            // Extraire l'ID de la commande depuis le format "1 - CMD-001 (EN_ATTENTE)"
+            String selectedValue = cmbOrderId.getValue().trim();
+            String orderIdStr;
+            if (selectedValue.contains(" - ")) {
+                // Format: "1 - CMD-001 (EN_ATTENTE)" -> extraire "1"
+                orderIdStr = selectedValue.split(" - ")[0].trim();
+            } else {
+                // Si l'utilisateur a saisi manuellement un nombre
+                orderIdStr = selectedValue;
             }
 
             // Créer l'adresse de livraison
@@ -317,7 +394,7 @@ public class DeliveryController {
 
             // Créer la livraison
             Delivery delivery = new Delivery();
-            delivery.setOrderId(Long.parseLong(txtOrderIdInput.getText().trim()));
+            delivery.setOrderId(Long.parseLong(orderIdStr));
             delivery.setShippingAddress(address);
             delivery.setCarrier(cmbCarrier.getValue());
             delivery.setStatus(DeliveryStatus.PENDING);
@@ -327,7 +404,13 @@ public class DeliveryController {
 
             executorService.submit(() -> {
                 try {
+                    // ✅ Calculer les frais de livraison automatiquement
+                    Double shippingCost = deliveryService.calculateShippingCost(address.getCity());
+                    delivery.setShippingCost(shippingCost);
+
+                    // Créer la livraison avec les frais
                     Delivery created = deliveryService.createDelivery(delivery);
+
                     Platform.runLater(() -> {
                         deliveryList.add(created);
                         clearForm();
@@ -342,7 +425,8 @@ public class DeliveryController {
                         );
 
                         showInfo("Succès", "Livraison créée avec le numéro: " +
-                                created.getTrackingNumber());
+                                created.getTrackingNumber() +
+                                "\nFrais de livraison: " + created.getShippingCost() + " MAD");
                     });
                 } catch (Exception e) {
                     Platform.runLater(() -> {
@@ -355,7 +439,7 @@ public class DeliveryController {
                 }
             });
         } catch (NumberFormatException e) {
-            showWarning("Validation", "Le numéro de commande doit être un nombre");
+            showWarning("Validation", "Le numéro de commande doit être un nombre valide");
         }
     }
 
@@ -507,7 +591,7 @@ public class DeliveryController {
     }
 
     private void clearForm() {
-        txtOrderIdInput.clear();
+        cmbOrderId.getSelectionModel().clearSelection();
         txtRecipientName.clear();
         txtFullAddress.clear();
         txtCity.clear();

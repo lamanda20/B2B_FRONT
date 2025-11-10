@@ -87,7 +87,7 @@
                             </columnConstraints>
 
                             <Label text="N° Commande:*" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                            <TextField fx:id="txtOrderIdInput" promptText="123" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            <ComboBox fx:id="cmbOrderId" prefWidth="200" promptText="Sélectionner une commande" GridPane.columnIndex="1" GridPane.rowIndex="0" editable="true"/>
 
                             <Label text="Destinataire:*" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
                             <TextField fx:id="txtRecipientName" promptText="Nom complet" GridPane.columnIndex="1" GridPane.rowIndex="1"/>

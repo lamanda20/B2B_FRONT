@@ -1,11 +1,21 @@
 package com.example.b2bfront.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class ShippingAddress {
     private Long id;
+
+    @SerializedName("adresse")
     private String fullAddress;
+
+    @SerializedName("ville")
     private String city;
+
     private String postalCode;
+
+    @SerializedName("telephone")
     private String phoneNumber;
+
     private String recipientName;
 
     public ShippingAddress() {
@@ -82,4 +92,3 @@ public class ShippingAddress {
                 '}';
     }
 }
-

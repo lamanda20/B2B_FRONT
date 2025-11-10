@@ -1,17 +1,44 @@
 package com.example.b2bfront.model;
 
+import com.google.gson.annotations.SerializedName;
 import java.time.LocalDateTime;
 
 public class Delivery {
     private Long id;
+
+    @SerializedName("commandeId")
     private Long orderId;
-    private ShippingAddress shippingAddress;
-    private String carrier; // Transporteur (Maroc Poste, Jumia Express, etc.)
+
+    // Champs d'adresse mappés directement depuis le backend
+    @SerializedName("adresse")
+    private String fullAddress;
+
+    @SerializedName("ville")
+    private String city;
+
+    @SerializedName("telephone")
+    private String phoneNumber;
+
+    private String postalCode;
+    private String recipientName;
+
+    @SerializedName("transporteur")
+    private String carrier;
+
+    @SerializedName("statut")
     private DeliveryStatus status;
+
+    @SerializedName("fraisLivraison")
     private Double shippingCost;
+
     private String trackingNumber;
+
+    @SerializedName("dateEstimee")
     private LocalDateTime estimatedDeliveryDate;
+
+    @SerializedName("dateEnvoi")
     private LocalDateTime actualDeliveryDate;
+
     private String notes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -25,7 +52,13 @@ public class Delivery {
                    String notes, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.orderId = orderId;
-        this.shippingAddress = shippingAddress;
+        if (shippingAddress != null) {
+            this.fullAddress = shippingAddress.getFullAddress();
+            this.city = shippingAddress.getCity();
+            this.phoneNumber = shippingAddress.getPhoneNumber();
+            this.postalCode = shippingAddress.getPostalCode();
+            this.recipientName = shippingAddress.getRecipientName();
+        }
         this.carrier = carrier;
         this.status = status;
         this.shippingCost = shippingCost;
@@ -35,6 +68,28 @@ public class Delivery {
         this.notes = notes;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+    }
+
+    // Méthode pour obtenir l'adresse comme objet ShippingAddress
+    public ShippingAddress getShippingAddress() {
+        ShippingAddress address = new ShippingAddress();
+        address.setFullAddress(this.fullAddress);
+        address.setCity(this.city);
+        address.setPhoneNumber(this.phoneNumber);
+        address.setPostalCode(this.postalCode);
+        address.setRecipientName(this.recipientName);
+        return address;
+    }
+
+    // Méthode pour définir l'adresse depuis un objet ShippingAddress
+    public void setShippingAddress(ShippingAddress address) {
+        if (address != null) {
+            this.fullAddress = address.getFullAddress();
+            this.city = address.getCity();
+            this.phoneNumber = address.getPhoneNumber();
+            this.postalCode = address.getPostalCode();
+            this.recipientName = address.getRecipientName();
+        }
     }
 
     // Getters and Setters
@@ -54,12 +109,44 @@ public class Delivery {
         this.orderId = orderId;
     }
 
-    public ShippingAddress getShippingAddress() {
-        return shippingAddress;
+    public String getFullAddress() {
+        return fullAddress;
     }
 
-    public void setShippingAddress(ShippingAddress shippingAddress) {
-        this.shippingAddress = shippingAddress;
+    public void setFullAddress(String fullAddress) {
+        this.fullAddress = fullAddress;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getPostalCode() {
+        return postalCode;
+    }
+
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
+    }
+
+    public String getRecipientName() {
+        return recipientName;
+    }
+
+    public void setRecipientName(String recipientName) {
+        this.recipientName = recipientName;
     }
 
     public String getCarrier() {
@@ -139,7 +226,9 @@ public class Delivery {
         return "Delivery{" +
                 "id=" + id +
                 ", orderId=" + orderId +
-                ", shippingAddress=" + shippingAddress +
+                ", fullAddress='" + fullAddress + '\'' +
+                ", city='" + city + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
                 ", carrier='" + carrier + '\'' +
                 ", status=" + status +
                 ", shippingCost=" + shippingCost +

@@ -1,9 +1,12 @@
 package com.example.b2bfront.service;
 
 import com.example.b2bfront.util.Constants;
+import com.example.b2bfront.util.LocalDateTimeAdapter;
 import okhttp3.*;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 public class ApiService {
@@ -23,7 +26,11 @@ public class ApiService {
                 .followRedirects(true)
                 .followSslRedirects(true)
                 .build();
-        this.gson = new Gson();
+
+        // ✅ Configurer Gson avec l'adaptateur LocalDateTime
+        this.gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+                .create();
 
         // Afficher l'URL du backend au démarrage
         System.out.println("ApiService initialized with backend URL: " + Constants.API_BASE_URL);

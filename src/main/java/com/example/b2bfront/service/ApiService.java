@@ -37,40 +37,15 @@ public class ApiService {
         return authToken;
     }
 
+    // ==================== GET ====================
     public String get(String endpoint) throws IOException {
         String url = buildUrl(endpoint);
-        System.out.println("GET Request: " + url);
-
         Request.Builder requestBuilder = new Request.Builder()
                 .url(url)
                 .get()
                 .addHeader("Accept", "application/json")
                 .addHeader("Content-Type", "application/json");
 
-        // Ajouter le token d'authentification si disponible
-        if (authToken != null && !authToken.isEmpty()) {
-            requestBuilder.addHeader("Authorization", "Bearer " + authToken);
-        }
-
-        return executeRequest(requestBuilder.build());
-    }
-
-    public String post(String endpoint, Object body) throws IOException {
-        String url = buildUrl(endpoint);
-        String json = gson.toJson(body);
-
-        System.out.println("POST Request: " + url);
-        System.out.println("Request Body: " + json);
-
-        RequestBody requestBody = RequestBody.create(json, JSON_MEDIA_TYPE);
-
-        Request.Builder requestBuilder = new Request.Builder()
-                .url(url)
-                .post(requestBody)
-                .addHeader("Accept", "application/json")
-                .addHeader("Content-Type", "application/json");
-
-        // Ajouter le token d'authentification si disponible
         if (authToken != null && !authToken.isEmpty()) {
             requestBuilder.addHeader("Authorization", "Bearer " + authToken);
         }
@@ -83,45 +58,83 @@ public class ApiService {
         return gson.fromJson(jsonResponse, responseType);
     }
 
+    // ==================== POST ====================
+    public String post(String endpoint, Object body) throws IOException {
+        String url = buildUrl(endpoint);
+        String json = gson.toJson(body);
+        RequestBody requestBody = RequestBody.create(json, JSON_MEDIA_TYPE);
+
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .addHeader("Accept", "application/json")
+                .addHeader("Content-Type", "application/json");
+
+        if (authToken != null && !authToken.isEmpty()) {
+            requestBuilder.addHeader("Authorization", "Bearer " + authToken);
+        }
+
+        return executeRequest(requestBuilder.build());
+    }
+
     public <T> T post(String endpoint, Object body, Class<T> responseType) throws IOException {
         String jsonResponse = post(endpoint, body);
         return gson.fromJson(jsonResponse, responseType);
     }
 
+    // ==================== PUT ====================
+    public String put(String endpoint, Object body) throws IOException {
+        String url = buildUrl(endpoint);
+        String json = body != null ? gson.toJson(body) : "";
+        RequestBody requestBody = RequestBody.create(json, JSON_MEDIA_TYPE);
+
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(url)
+                .put(requestBody)
+                .addHeader("Accept", "application/json")
+                .addHeader("Content-Type", "application/json");
+
+        if (authToken != null && !authToken.isEmpty()) {
+            requestBuilder.addHeader("Authorization", "Bearer " + authToken);
+        }
+
+        return executeRequest(requestBuilder.build());
+    }
+
+    public <T> T put(String endpoint, Object body, Class<T> responseType) throws IOException {
+        String jsonResponse = put(endpoint, body);
+        return gson.fromJson(jsonResponse, responseType);
+    }
+
+    // ==================== EXECUTE ====================
     private String executeRequest(Request request) throws IOException {
         try (Response response = client.newCall(request).execute()) {
             String responseBody = response.body() != null ? response.body().string() : "";
 
             if (!response.isSuccessful()) {
                 String errorMsg = String.format("HTTP %d %s - %s",
-                    response.code(),
-                    response.message(),
-                    responseBody);
+                        response.code(),
+                        response.message(),
+                        responseBody);
                 System.err.println("Error: " + errorMsg);
 
-                // Message d'erreur spécifique pour 403
                 if (response.code() == 403) {
-                    throw new IOException("Accès refusé (403) - Vérifiez la configuration Spring Security du backend. " +
-                            "Voir BACKEND_FIX_403.md pour les solutions.");
+                    throw new IOException("Accès refusé (403) - Vérifiez la configuration Spring Security du backend.");
                 }
 
                 throw new IOException(errorMsg);
             }
 
-            System.out.println("Response: " + responseBody);
             return responseBody;
         }
     }
 
     private String buildUrl(String endpoint) {
-        // S'assurer que l'endpoint commence par /
         String cleanEndpoint = endpoint.startsWith("/") ? endpoint : "/" + endpoint;
         return Constants.API_BASE_URL + cleanEndpoint;
     }
 
-    /**
-     * Teste la connexion au backend
-     */
+    // ==================== TEST CONNECTION ====================
     public boolean testConnection() {
         try {
             get(Constants.ENDPOINT_HEALTH);

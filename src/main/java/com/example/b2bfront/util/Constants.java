@@ -3,7 +3,7 @@ package com.example.b2bfront.util;
 public class Constants {
 
     // Backend API Configuration
-    // Le backend a déjà le context path /api, donc on ne le met pas dans l'URL de base
+    // The backend in this project runs on port 8082 in the user's environment
     private static final String DEFAULT_API_BASE_URL = "http://localhost:8082/api";
 
     // Résolution de l'URL du backend (variable d'environnement > propriété système > défaut)
@@ -24,6 +24,9 @@ public class Constants {
 
     // Payment Endpoints (pour intégration avec module paiement)
     public static final String ENDPOINT_PAYMENTS = "/payments";
+
+    // Product Endpoints
+    public static final String ENDPOINT_PRODUCTS = "/produits";
 
     // Application Configuration
     public static final String APP_TITLE = "B2B Front Application";
@@ -68,10 +71,7 @@ public class Constants {
      * Affiche la configuration actuelle
      */
     public static void printConfiguration() {
-        System.out.println("=================================");
-        System.out.println("B2B Frontend Configuration");
-        System.out.println("=================================");
-        System.out.println("Backend URL: " + API_BASE_URL);
-        System.out.println("=================================");
+        System.out.println("Application configuration:");
+        System.out.println(" API_BASE_URL = " + API_BASE_URL);
     }
 }
